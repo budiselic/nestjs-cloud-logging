@@ -1,6 +1,7 @@
 # nestjs-cloud-logging
 
-xtended default NestJS logger with Winston transporter for Google Cloud Logging.
+Extended default NestJS logger with Winston transporter for Google Cloud
+Logging.
 
 ```typescript
 // app.module.ts
