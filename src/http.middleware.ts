@@ -6,7 +6,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { WinstonLoggerService } from './logger.constants';
 import { getDurationInMilliseconds } from './logger.utils';
 import { JwtService } from '@nestjs/jwt';
-import * as fs from 'fs';
 
 @Injectable()
 export class HttpMiddleware implements NestMiddleware {
@@ -25,7 +24,9 @@ export class HttpMiddleware implements NestMiddleware {
       next();
       const token = req.headers['authorization']?.replace('Bearer ', '');
       if (token) {
-        const decodedInfo = this.jwtService.decode(token.replace('Bearer ', ''));
+        const decodedInfo = this.jwtService.decode(
+          token.replace('Bearer ', ''),
+        );
         store.set('user', decodedInfo);
       }
       store.set('requestId', uuidv4());
@@ -49,7 +50,9 @@ export class HttpMiddleware implements NestMiddleware {
         store.set('params', req.params);
       });
 
-      this.logger.log(`${method} ${originalUrl} ${statusCode} ${contentLength} - ${userAgent} ${ip}`);
+      this.logger.log(
+        `${method} ${originalUrl} ${statusCode} ${contentLength} - ${userAgent} ${ip}`,
+      );
     });
   }
 }

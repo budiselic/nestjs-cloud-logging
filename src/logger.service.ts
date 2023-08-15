@@ -1,4 +1,4 @@
-import { ConsoleLogger, Inject, Injectable, Scope } from '@nestjs/common';
+import { ConsoleLogger, Injectable } from '@nestjs/common';
 import winston from 'winston';
 import { loggerStorage } from './logger.storage';
 import { v4 as uuidv4 } from 'uuid';
@@ -17,7 +17,10 @@ export class LoggerService extends ConsoleLogger {
   };
   private meta: Map<any, any> = new Map();
 
-  constructor(private readonly logger?: winston.Logger, private inquirer?: string) {
+  constructor(
+    private readonly logger?: winston.Logger,
+    private inquirer?: string,
+  ) {
     super();
     this.metadata.context = this.inquirer || this.constructor.name;
     this.meta.set('context', this.inquirer || this.constructor.name);
@@ -33,7 +36,8 @@ export class LoggerService extends ConsoleLogger {
 
     // GCL
     this.store = loggerStorage.getStore();
-    if (this.store) Object.assign(this.metadata, Object.fromEntries(this.store));
+    if (this.store)
+      Object.assign(this.metadata, Object.fromEntries(this.store));
     this.logger.error(message, this.metadata);
   }
 
@@ -42,7 +46,8 @@ export class LoggerService extends ConsoleLogger {
 
     // GCL
     this.store = loggerStorage.getStore();
-    if (this.store) Object.assign(this.metadata, Object.fromEntries(this.store));
+    if (this.store)
+      Object.assign(this.metadata, Object.fromEntries(this.store));
     this.logger.info(message, this.metadata);
   }
 
@@ -51,7 +56,8 @@ export class LoggerService extends ConsoleLogger {
 
     // GCL
     this.store = loggerStorage.getStore();
-    if (this.store) Object.assign(this.metadata, Object.fromEntries(this.store));
+    if (this.store)
+      Object.assign(this.metadata, Object.fromEntries(this.store));
     this.logger.debug(message, this.metadata);
   }
 
@@ -60,7 +66,8 @@ export class LoggerService extends ConsoleLogger {
 
     // GCL
     this.store = loggerStorage.getStore();
-    if (this.store) Object.assign(this.metadata, Object.fromEntries(this.store));
+    if (this.store)
+      Object.assign(this.metadata, Object.fromEntries(this.store));
     this.logger.warn(message, this.metadata);
   }
 
@@ -69,7 +76,8 @@ export class LoggerService extends ConsoleLogger {
 
     // GCL
     this.store = loggerStorage.getStore();
-    if (this.store) Object.assign(this.metadata, Object.fromEntries(this.store));
+    if (this.store)
+      Object.assign(this.metadata, Object.fromEntries(this.store));
     this.logger.verbose(message, this.metadata);
   }
 }

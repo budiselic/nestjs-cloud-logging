@@ -1,13 +1,21 @@
-import { DynamicModule, MiddlewareConsumer, Module, Scope } from '@nestjs/common';
+import {
+  DynamicModule,
+  MiddlewareConsumer,
+  Module,
+  Scope,
+} from '@nestjs/common';
 import { HttpMiddleware } from './http.middleware';
 import winston from 'winston';
-import { WinstonLogger, WinstonLoggerService, WinstonLoggerServiceApp } from './logger.constants';
+import {
+  WinstonLogger,
+  WinstonLoggerService,
+  WinstonLoggerServiceApp,
+} from './logger.constants';
 import { INQUIRER } from '@nestjs/core';
 import { Constructor } from '@nestjs/common/utils/merge-with-values.util';
 import { LoggerService } from './logger.service';
 import { JwtModule } from '@nestjs/jwt';
 import { LoggingWinston } from '@google-cloud/logging-winston';
-import { Globals } from '../../../common/globals';
 
 interface LoggerOptions {
   projectId: string;
@@ -26,8 +34,8 @@ export class WinstonLoggerModule {
       level: 'debug',
       transports: [
         new LoggingWinston({
-          projectId: Globals.PROJECT_ID,
-          keyFilename: Globals.PROJECT_KEY_PATH,
+          projectId: options.projectId,
+          keyFilename: options.keyFilename,
         }),
       ],
       defaultMeta: {
