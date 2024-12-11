@@ -19,7 +19,7 @@ const core_1 = require("@nestjs/core");
 const logger_service_1 = require("./logger.service");
 const jwt_1 = require("@nestjs/jwt");
 const logging_winston_1 = require("@google-cloud/logging-winston");
-let WinstonLoggerModule = exports.WinstonLoggerModule = WinstonLoggerModule_1 = class WinstonLoggerModule {
+let WinstonLoggerModule = WinstonLoggerModule_1 = class WinstonLoggerModule {
     configure(consumer) {
         consumer.apply(http_middleware_1.HttpMiddleware).forRoutes('*');
     }
@@ -67,6 +67,7 @@ let WinstonLoggerModule = exports.WinstonLoggerModule = WinstonLoggerModule_1 = 
         };
     }
 };
+exports.WinstonLoggerModule = WinstonLoggerModule;
 exports.WinstonLoggerModule = WinstonLoggerModule = WinstonLoggerModule_1 = __decorate([
     (0, common_1.Module)({})
 ], WinstonLoggerModule);

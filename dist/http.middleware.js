@@ -20,7 +20,7 @@ const uuid_1 = require("uuid");
 const logger_constants_1 = require("./logger.constants");
 const logger_utils_1 = require("./logger.utils");
 const jwt_1 = require("@nestjs/jwt");
-let HttpMiddleware = exports.HttpMiddleware = class HttpMiddleware {
+let HttpMiddleware = class HttpMiddleware {
     constructor(logger, jwtService) {
         this.logger = logger;
         this.jwtService = jwtService;
@@ -59,6 +59,7 @@ let HttpMiddleware = exports.HttpMiddleware = class HttpMiddleware {
         });
     }
 };
+exports.HttpMiddleware = HttpMiddleware;
 exports.HttpMiddleware = HttpMiddleware = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(logger_constants_1.WinstonLoggerService)),

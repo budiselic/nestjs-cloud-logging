@@ -17,7 +17,7 @@ const common_1 = require("@nestjs/common");
 const winston_1 = __importDefault(require("winston"));
 const logger_storage_1 = require("./logger.storage");
 const uuid_1 = require("uuid");
-let LoggerService = exports.LoggerService = class LoggerService extends common_1.ConsoleLogger {
+let LoggerService = class LoggerService extends common_1.ConsoleLogger {
     constructor(logger, inquirer) {
         super();
         this.logger = logger;
@@ -68,6 +68,7 @@ let LoggerService = exports.LoggerService = class LoggerService extends common_1
         this.logger.verbose(message, this.metadata);
     }
 };
+exports.LoggerService = LoggerService;
 exports.LoggerService = LoggerService = __decorate([
     (0, common_1.Injectable)(),
     __metadata("design:paramtypes", [winston_1.default.Logger, String])
