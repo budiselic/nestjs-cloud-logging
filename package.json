@@ -1,6 +1,6 @@
 {
   "name": "nestjs-cloud-logging",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Extended default NestJS logger with Winston transporter for Google Cloud Logging.",
   "main": "dist/index.js",
   "scripts": {
