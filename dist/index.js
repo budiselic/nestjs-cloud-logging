@@ -17,6 +17,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./http.middleware"), exports);
 __exportStar(require("./logger.constants"), exports);
 __exportStar(require("./logger.decorator"), exports);
+__exportStar(require("./logger.interfaces"), exports);
 __exportStar(require("./logger.module"), exports);
 __exportStar(require("./logger.utils"), exports);
 __exportStar(require("./logger.service"), exports);

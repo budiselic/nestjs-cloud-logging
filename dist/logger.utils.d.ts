@@ -1,1 +1,1 @@
-export declare const getDurationInMilliseconds: (start: any) => number;
+export declare const getDurationInMilliseconds: (start: [number, number]) => number;

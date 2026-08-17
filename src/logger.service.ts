@@ -1,83 +1,139 @@
 import { ConsoleLogger, Injectable } from '@nestjs/common';
-import winston from 'winston';
+import type { Logger as WinstonLogger } from 'winston';
+import { randomUUID } from 'crypto';
 import { loggerStorage } from './logger.storage';
-import { v4 as uuidv4 } from 'uuid';
 
-interface Metadata {
+interface LoggerMetadata extends Record<string, unknown> {
   context?: string;
-  stack?: any;
+  stack?: string;
   loggerInstanceId: string;
 }
 
 @Injectable()
 export class LoggerService extends ConsoleLogger {
-  private store: Map<any, any>;
-  private metadata: Metadata = {
-    loggerInstanceId: uuidv4().split('-')[0],
-  };
-  private meta: Map<any, any> = new Map();
+  private readonly loggerInstanceId = randomUUID().split('-')[0];
 
   constructor(
-    private readonly logger?: winston.Logger,
-    private inquirer?: string,
+    private readonly logger: WinstonLogger,
+    context = LoggerService.name,
   ) {
-    super();
-    this.metadata.context = this.inquirer || this.constructor.name;
-    this.meta.set('context', this.inquirer || this.constructor.name);
-    super.setContext(this.metadata.context);
+    super(context);
   }
 
-  error(message: any, stack?: string, context?: string) {
-    super.error(message, stack, context);
+  error(message: unknown, ...optionalParams: unknown[]): void {
+    if (!this.isLevelEnabled('error')) return;
+    super.error(message, ...optionalParams);
 
-    // Setting metadata
-    this.metadata.context = context;
-    this.metadata.stack = stack;
-
-    // GCL
-    this.store = loggerStorage.getStore();
-    if (this.store)
-      Object.assign(this.metadata, Object.fromEntries(this.store));
-    this.logger.error(message, this.metadata);
+    const { context, stack } = this.getErrorContextAndStack(optionalParams);
+    this.logger.error(
+      this.serializeMessage(message),
+      this.getMetadata(context, stack),
+    );
   }
 
-  log(message: any, context?: string) {
-    super.log(message);
-
-    // GCL
-    this.store = loggerStorage.getStore();
-    if (this.store)
-      Object.assign(this.metadata, Object.fromEntries(this.store));
-    this.logger.info(message, this.metadata);
+  log(message: unknown, ...optionalParams: unknown[]): void {
+    if (!this.isLevelEnabled('log')) return;
+    super.log(message, ...optionalParams);
+    this.logger.info(
+      this.serializeMessage(message),
+      this.getMetadata(this.getContext(optionalParams)),
+    );
   }
 
-  debug(message: any, context?: string) {
-    super.debug(message);
-
-    // GCL
-    this.store = loggerStorage.getStore();
-    if (this.store)
-      Object.assign(this.metadata, Object.fromEntries(this.store));
-    this.logger.debug(message, this.metadata);
+  debug(message: unknown, ...optionalParams: unknown[]): void {
+    if (!this.isLevelEnabled('debug')) return;
+    super.debug(message, ...optionalParams);
+    this.logger.debug(
+      this.serializeMessage(message),
+      this.getMetadata(this.getContext(optionalParams)),
+    );
   }
 
-  warn(message: any, context?: string) {
-    super.warn(message);
-
-    // GCL
-    this.store = loggerStorage.getStore();
-    if (this.store)
-      Object.assign(this.metadata, Object.fromEntries(this.store));
-    this.logger.warn(message, this.metadata);
+  warn(message: unknown, ...optionalParams: unknown[]): void {
+    if (!this.isLevelEnabled('warn')) return;
+    super.warn(message, ...optionalParams);
+    this.logger.warn(
+      this.serializeMessage(message),
+      this.getMetadata(this.getContext(optionalParams)),
+    );
   }
 
-  verbose(message: any, context?: string) {
-    super.verbose(message);
+  verbose(message: unknown, ...optionalParams: unknown[]): void {
+    if (!this.isLevelEnabled('verbose')) return;
+    super.verbose(message, ...optionalParams);
+    this.logger.verbose(
+      this.serializeMessage(message),
+      this.getMetadata(this.getContext(optionalParams)),
+    );
+  }
 
-    // GCL
-    this.store = loggerStorage.getStore();
-    if (this.store)
-      Object.assign(this.metadata, Object.fromEntries(this.store));
-    this.logger.verbose(message, this.metadata);
+  fatal(message: unknown, ...optionalParams: unknown[]): void {
+    if (!this.isLevelEnabled('fatal')) return;
+    super.fatal(message, ...optionalParams);
+    this.logger.error(
+      this.serializeMessage(message),
+      this.getMetadata(this.getContext(optionalParams), undefined, 'fatal'),
+    );
+  }
+
+  private getContext(optionalParams: readonly unknown[]): string | undefined {
+    const context = optionalParams.at(-1);
+    return typeof context === 'string' ? context : undefined;
+  }
+
+  private serializeMessage(message: unknown): string {
+    if (typeof message === 'string') return message;
+    if (message instanceof Error) return message.stack || message.message;
+
+    try {
+      return (
+        JSON.stringify(message, (_key, value: unknown) =>
+          typeof value === 'bigint' ? value.toString() : value,
+        ) || String(message)
+      );
+    } catch {
+      return String(message);
+    }
+  }
+
+  private getErrorContextAndStack(optionalParams: readonly unknown[]): {
+    context?: string;
+    stack?: string;
+  } {
+    if (optionalParams.length === 0) return {};
+
+    if (optionalParams.length === 1) {
+      const value = optionalParams[0];
+      if (typeof value !== 'string') return {};
+      return this.isStack(value) ? { stack: value } : { context: value };
+    }
+
+    const context = this.getContext(optionalParams);
+    const stackCandidate = optionalParams[optionalParams.length - 2];
+    const stack =
+      typeof stackCandidate === 'string' ? stackCandidate : undefined;
+    return { context, stack };
+  }
+
+  private isStack(value: string): boolean {
+    return /^(.)+\n\s+at .+:\d+:\d+/.test(value);
+  }
+
+  private getMetadata(
+    context?: string,
+    stack?: string,
+    nestLevel?: string,
+  ): LoggerMetadata {
+    const store = loggerStorage.getStore();
+    const metadata: LoggerMetadata = {
+      ...(store ? Object.fromEntries(store) : {}),
+      loggerInstanceId: this.loggerInstanceId,
+      context: context || this.context || LoggerService.name,
+    };
+
+    if (stack) metadata.stack = stack;
+    if (nestLevel) metadata.nestLevel = nestLevel;
+
+    return metadata;
   }
 }

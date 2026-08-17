@@ -1,4 +1,4 @@
-export const getDurationInMilliseconds = (start) => {
+export const getDurationInMilliseconds = (start: [number, number]): number => {
   const NS_PER_SEC = 1e9;
   const NS_TO_MS = 1e6;
   const diff = process.hrtime(start);
