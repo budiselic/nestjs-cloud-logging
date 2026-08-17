@@ -1,44 +1,54 @@
 {
   "name": "nestjs-cloud-logging",
-  "version": "1.0.8",
-  "description": "Extended default NestJS logger with Winston transporter for Google Cloud Logging.",
+  "version": "2.0.0",
+  "description": "NestJS logger with request-scoped metadata and a Winston transport for Google Cloud Logging.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "img.png"
+  ],
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "lint": "eslint src/**/*.ts --ignore-pattern src/**/*.spec.ts",
-    "prebuild": "rimraf dist",
-    "build": "tsc"
+    "clean": "node -e \"require('node:fs').rmSync('dist', { recursive: true, force: true })\"",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.cjs\" \"*.md\" \"*.json\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.cjs\" \"*.md\" \"*.json\" \".github/**/*.yml\"",
+    "lint": "eslint \"src/**/*.ts\"",
+    "prebuild": "npm run clean",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "npm run build && node --test",
+    "test:coverage": "npm run build && node --test --experimental-test-coverage",
+    "verify": "npm run format:check && npm run lint && npm run test",
+    "prepack": "npm run build"
   },
   "dependencies": {
-    "@google-cloud/logging-winston": "^6.0.0",
-    "@nestjs/common": "^10.4.15",
-    "@nestjs/config": "^3.3.0",
-    "@nestjs/core": "^10.4.15",
-    "@nestjs/jwt": "^10.2.0",
-    "@nestjs/platform-express": "^10.4.15",
-    "reflect-metadata": "^0.1.14",
-    "rimraf": "^5.0.10",
-    "rxjs": "^7.8.1",
-    "type-fest": "^4.30.0",
-    "uuid": "^9.0.1",
-    "winston": "^3.17.0"
+    "@google-cloud/logging-winston": "^7.0.1",
+    "winston": "^3.19.0"
+  },
+  "peerDependencies": {
+    "@nestjs/common": "^10.4.16 || ^11.1.18",
+    "@nestjs/core": "^10.4.16 || ^11.1.18",
+    "@nestjs/platform-express": "^10.4.16 || ^11.1.18",
+    "reflect-metadata": "^0.1.13 || ^0.2.0",
+    "rxjs": "^7.8.0"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.4.9",
-    "@nestjs/schematics": "^10.2.3",
-    "@types/express": "^4.17.21",
-    "@types/node": "^20.10.0",
-    "@typescript-eslint/eslint-plugin": "^6.21.0",
-    "@typescript-eslint/parser": "^6.21.0",
-    "eslint": "^8.47.0",
-    "eslint-config-prettier": "^9.1.0",
-    "eslint-plugin-prettier": "^5.2.1",
-    "prettier": "^3.4.2",
-    "source-map-support": "^0.5.21",
-    "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
-    "tsconfig-paths": "^4.2.0",
-    "typescript": "^5.1.6"
+    "@eslint/js": "^10.0.1",
+    "@nestjs/common": "^11.2.1",
+    "@nestjs/core": "^11.2.1",
+    "@nestjs/platform-express": "^11.2.1",
+    "@types/node": "^22.20.1",
+    "eslint": "^10.8.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "prettier": "^3.9.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.67.0"
   },
   "repository": {
     "type": "git",
@@ -46,16 +56,20 @@
   },
   "keywords": [
     "nestjs",
+    "google-cloud",
+    "cloud-logging",
     "logger",
-    "cloud",
-    "logging",
-    "console",
-    "winston"
+    "winston",
+    "structured-logging",
+    "async-local-storage"
   ],
   "author": "Antonio Budiselić",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/budiselic/nestjs-cloud-logging/issues"
   },
-  "homepage": "https://github.com/budiselic/nestjs-cloud-logging#readme"
+  "homepage": "https://github.com/budiselic/nestjs-cloud-logging#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }

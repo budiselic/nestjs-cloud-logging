@@ -1,51 +1,58 @@
 import {
   DynamicModule,
+  Inject,
   MiddlewareConsumer,
   Module,
   Scope,
 } from '@nestjs/common';
-import { HttpMiddleware } from './http.middleware';
+import { INQUIRER } from '@nestjs/core';
+import { LoggingWinston } from '@google-cloud/logging-winston';
 import winston from 'winston';
+import { HttpMiddleware } from './http.middleware';
 import {
   WinstonLogger,
+  WinstonLoggerOptions,
   WinstonLoggerService,
   WinstonLoggerServiceApp,
 } from './logger.constants';
-import { INQUIRER } from '@nestjs/core';
-import { Constructor } from '@nestjs/common/utils/merge-with-values.util';
+import type { WinstonLoggerModuleOptions } from './logger.interfaces';
 import { LoggerService } from './logger.service';
-import { JwtModule } from '@nestjs/jwt';
-import { LoggingWinston } from '@google-cloud/logging-winston';
-
-interface LoggerOptions {
-  projectId: string;
-  keyFilename: string;
-  isGlobal: boolean;
-}
 
 @Module({})
 export class WinstonLoggerModule {
-  configure(consumer: MiddlewareConsumer): any {
+  constructor(
+    @Inject(WinstonLoggerOptions)
+    private readonly options: WinstonLoggerModuleOptions,
+  ) {}
+
+  configure(consumer: MiddlewareConsumer): void {
+    if (this.options.http === false) return;
     consumer.apply(HttpMiddleware).forRoutes('*');
   }
 
-  static forRoot(options: LoggerOptions): DynamicModule {
+  static forRoot(options: WinstonLoggerModuleOptions = {}): DynamicModule {
     const winstonOptions: winston.LoggerOptions = {
-      level: 'debug',
+      level: options.level || 'debug',
       transports: [
         new LoggingWinston({
           projectId: options.projectId,
           keyFilename: options.keyFilename,
+          ...options.transportOptions,
         }),
       ],
       defaultMeta: {
         framework: 'nestjs',
+        ...options.defaultMeta,
       },
     };
+
     return {
       module: WinstonLoggerModule,
-      imports: [JwtModule.register({})],
       providers: [
+        {
+          provide: WinstonLoggerOptions,
+          useValue: options,
+        },
         {
           provide: WinstonLogger,
           useFactory() {
@@ -56,20 +63,23 @@ export class WinstonLoggerModule {
           provide: WinstonLoggerService,
           scope: Scope.TRANSIENT,
           inject: [WinstonLogger, INQUIRER],
-          useFactory(logger: winston.Logger, a: Constructor<unknown>) {
-            return new LoggerService(logger, a?.constructor.name);
+          useFactory(logger: winston.Logger, inquirer?: object) {
+            return new LoggerService(
+              logger,
+              inquirer?.constructor?.name || LoggerService.name,
+            );
           },
         },
         {
           provide: WinstonLoggerServiceApp,
-          inject: [WinstonLogger, INQUIRER],
-          useFactory(logger: winston.Logger, a: Constructor<unknown>) {
-            return new LoggerService(logger, a?.constructor.name);
+          inject: [WinstonLogger],
+          useFactory(logger: winston.Logger) {
+            return new LoggerService(logger, 'Application');
           },
         },
       ],
       exports: [WinstonLoggerService, WinstonLoggerServiceApp],
-      global: options.isGlobal,
+      global: options.isGlobal || false,
     };
   }
 }

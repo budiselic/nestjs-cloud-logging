@@ -16,36 +16,58 @@ exports.HttpMiddleware = void 0;
 const common_1 = require("@nestjs/common");
 const logger_service_1 = require("./logger.service");
 const logger_storage_1 = require("./logger.storage");
-const uuid_1 = require("uuid");
+const crypto_1 = require("crypto");
 const logger_constants_1 = require("./logger.constants");
 const logger_utils_1 = require("./logger.utils");
-const jwt_1 = require("@nestjs/jwt");
+const http_utils_1 = require("./http.utils");
+const DEFAULT_HTTP_OPTIONS = {
+    captureHeaders: true,
+    captureBody: true,
+    captureUser: true,
+    requestIdHeader: 'x-request-id',
+    redactedValue: '[REDACTED]',
+};
 let HttpMiddleware = class HttpMiddleware {
-    constructor(logger, jwtService) {
+    constructor(logger, loggerOptions) {
         this.logger = logger;
-        this.jwtService = jwtService;
+        this.loggerOptions = loggerOptions;
     }
     use(req, res, next) {
+        const options = {
+            ...DEFAULT_HTTP_OPTIONS,
+            ...(this.loggerOptions.http || {}),
+        };
         const store = new Map();
         const start = process.hrtime();
         const { ip, method, originalUrl } = req;
         const userAgent = req.get('user-agent') || '';
-        logger_storage_1.loggerStorage.run(store, () => {
-            next();
-            const token = req.headers['authorization']?.replace('Bearer ', '');
-            if (token) {
-                const decodedInfo = this.jwtService.decode(token.replace('Bearer ', ''));
-                store.set('user', decodedInfo);
-            }
-            store.set('requestId', (0, uuid_1.v4)());
-            store.set('protocol', req.protocol);
-            store.set('method', req.method);
-            store.set('originalUrl', req.originalUrl);
-            store.set('body', req.body);
-            store.set('headers', req.headers);
-            store.set('params', req.params);
-        });
-        res.on('close', () => {
+        const requestIdHeader = options.requestIdHeader.toLowerCase();
+        const incomingRequestId = req.headers[requestIdHeader];
+        const requestId = Array.isArray(incomingRequestId)
+            ? incomingRequestId[0]
+            : incomingRequestId;
+        store.set('requestId', requestId || (0, crypto_1.randomUUID)());
+        store.set('protocol', req.protocol);
+        store.set('method', method);
+        store.set('originalUrl', originalUrl);
+        store.set('params', req.params);
+        if (options.captureHeaders) {
+            store.set('headers', (0, http_utils_1.redactHeaders)(req.headers, options.redactHeaders, options.redactedValue));
+        }
+        if (options.captureBody) {
+            store.set('body', (0, http_utils_1.redactBody)(req.body, options.redactFields, options.redactedValue));
+        }
+        if (options.captureUser) {
+            const token = (0, http_utils_1.getBearerToken)(req.headers.authorization);
+            const user = token ? (0, http_utils_1.decodeJwtPayload)(token) : undefined;
+            if (user !== undefined)
+                store.set('user', user);
+        }
+        let responseLogged = false;
+        const logResponse = (aborted) => {
+            if (responseLogged)
+                return;
+            responseLogged = true;
             const durationInMilliseconds = (0, logger_utils_1.getDurationInMilliseconds)(start);
             const { statusCode } = res;
             const contentLength = res.get('content-length');
@@ -54,16 +76,24 @@ let HttpMiddleware = class HttpMiddleware {
                 store.set('statusCode', statusCode);
                 store.set('duration', durationInMilliseconds);
                 store.set('params', req.params);
+                if (aborted)
+                    store.set('aborted', true);
+                this.logger.log(`${method} ${originalUrl} ${statusCode} ${contentLength || '-'} - ${userAgent} ${ip || '-'}`);
             });
-            this.logger.log(`${method} ${originalUrl} ${statusCode} ${contentLength} - ${userAgent} ${ip}`);
+        };
+        res.once('finish', () => logResponse(false));
+        res.once('close', () => {
+            if (!res.writableFinished)
+                logResponse(true);
         });
+        logger_storage_1.loggerStorage.run(store, next);
     }
 };
 exports.HttpMiddleware = HttpMiddleware;
 exports.HttpMiddleware = HttpMiddleware = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, common_1.Inject)(logger_constants_1.WinstonLoggerService)),
-    __metadata("design:paramtypes", [logger_service_1.LoggerService,
-        jwt_1.JwtService])
+    __param(1, (0, common_1.Inject)(logger_constants_1.WinstonLoggerOptions)),
+    __metadata("design:paramtypes", [logger_service_1.LoggerService, Object])
 ], HttpMiddleware);
 //# sourceMappingURL=http.middleware.js.map

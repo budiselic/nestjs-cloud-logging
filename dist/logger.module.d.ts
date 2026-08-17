@@ -1,11 +1,8 @@
 import { DynamicModule, MiddlewareConsumer } from '@nestjs/common';
-interface LoggerOptions {
-    projectId: string;
-    keyFilename: string;
-    isGlobal: boolean;
-}
+import type { WinstonLoggerModuleOptions } from './logger.interfaces';
 export declare class WinstonLoggerModule {
-    configure(consumer: MiddlewareConsumer): any;
-    static forRoot(options: LoggerOptions): DynamicModule;
+    private readonly options;
+    constructor(options: WinstonLoggerModuleOptions);
+    configure(consumer: MiddlewareConsumer): void;
+    static forRoot(options?: WinstonLoggerModuleOptions): DynamicModule;
 }
-export {};

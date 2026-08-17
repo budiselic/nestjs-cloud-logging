@@ -1,16 +1,11 @@
 import { Inject } from '@nestjs/common';
-import { Constructor } from 'type-fest';
 import { WinstonLoggerService } from './logger.constants';
 
-export function Logger(name?: string): ReturnType<typeof Inject> {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  return (
-    target: Constructor<unknown>,
-    key: string | symbol,
-    index?: number,
-  ) => {
-    name = name || target.constructor.name;
-    Inject(WinstonLoggerService)(target, key, index);
-  };
+/**
+ * Injects a transient cloud logger whose context is the consuming class.
+ * @param _name Kept for backward compatibility. Context names should be passed
+ * to a log method or configured with `setContext()`.
+ */
+export function Logger(_name?: string): ReturnType<typeof Inject> {
+  return Inject(WinstonLoggerService);
 }
