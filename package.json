@@ -1,6 +1,6 @@
 {
   "name": "nestjs-cloud-logging",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "NestJS logger with request-scoped metadata and a Winston transport for Google Cloud Logging.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,7 +25,7 @@
     "prepack": "npm run build"
   },
   "dependencies": {
-    "@google-cloud/logging-winston": "^7.0.1",
+    "@google-cloud/logging-winston": "^7.1.0",
     "winston": "^3.19.0"
   },
   "peerDependencies": {
@@ -37,18 +37,18 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@nestjs/common": "^11.2.1",
-    "@nestjs/core": "^11.2.1",
-    "@nestjs/platform-express": "^11.2.1",
-    "@types/node": "^22.20.1",
-    "eslint": "^10.8.1",
+    "@nestjs/common": "^11.2.6",
+    "@nestjs/core": "^11.2.6",
+    "@nestjs/platform-express": "^11.2.6",
+    "@types/node": "^22.20.4",
+    "eslint": "^10.11.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
-    "prettier": "^3.9.0",
+    "prettier": "^3.9.9",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.67.0"
+    "typescript-eslint": "^8.70.1"
   },
   "repository": {
     "type": "git",

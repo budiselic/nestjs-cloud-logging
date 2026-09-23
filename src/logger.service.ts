@@ -77,7 +77,7 @@ export class LoggerService extends ConsoleLogger {
   }
 
   private getContext(optionalParams: readonly unknown[]): string | undefined {
-    const context = optionalParams.at(-1);
+    const context = optionalParams[optionalParams.length - 1];
     return typeof context === 'string' ? context : undefined;
   }
 
