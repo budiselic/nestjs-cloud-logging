@@ -12,8 +12,10 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [22, 24]
+        node-version: [22, 24, 26]
+        nest-version: ['10', '11']
 
     steps:
       - uses: actions/checkout@v7
@@ -22,4 +24,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
+      - name: Select NestJS ${{ matrix.nest-version }}
+        if: matrix.nest-version != '11'
+        run: >-
+          npm install --no-save --package-lock=false
+          @nestjs/common@${{ matrix.nest-version }}
+          @nestjs/core@${{ matrix.nest-version }}
+          @nestjs/platform-express@${{ matrix.nest-version }}
+      - run: npm audit --omit=dev --audit-level=high
       - run: npm run verify

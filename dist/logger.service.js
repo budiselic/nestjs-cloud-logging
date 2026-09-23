@@ -58,7 +58,7 @@ let LoggerService = LoggerService_1 = class LoggerService extends common_1.Conso
         this.logger.error(this.serializeMessage(message), this.getMetadata(this.getContext(optionalParams), undefined, 'fatal'));
     }
     getContext(optionalParams) {
-        const context = optionalParams.at(-1);
+        const context = optionalParams[optionalParams.length - 1];
         return typeof context === 'string' ? context : undefined;
     }
     serializeMessage(message) {

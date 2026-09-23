@@ -207,6 +207,7 @@ npm pack --dry-run
 ```
 
 `npm run verify` runs formatting, linting, the TypeScript build, and all tests.
+CI verifies the package against NestJS 10 and 11 on Node.js 22, 24, and 26.
 The published package is restricted to compiled files, this README, the image,
 the package manifest, and the license.
 
